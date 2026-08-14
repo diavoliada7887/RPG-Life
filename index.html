@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#11131a" />
+  <meta name="description" content="RPG Live — прожить своего персонажа, а не закрыть всю карту." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>RPG Live</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-nav="today" aria-label="RPG Live — на главную">
+        <span class="brand-mark">R</span>
+        <span><b>RPG Live</b><small>жизнь не обязана быть выполнена</small></span>
+      </button>
+      <div class="top-actions">
+        <button id="installBtn" class="ghost hidden">Установить</button>
+        <button id="quickAddBtn" class="primary">＋ Записать</button>
+      </div>
+    </header>
+
+    <main id="app"></main>
+
+    <nav class="bottom-nav" aria-label="Навигация">
+      <button data-nav="today" class="active"><span>⌂</span><small>Сегодня</small></button>
+      <button data-nav="quests"><span>◈</span><small>Квесты</small></button>
+      <button data-nav="branches"><span>⌁</span><small>Ветки</small></button>
+      <button data-nav="memory"><span>✦</span><small>Память</small></button>
+      <button data-nav="year"><span>▦</span><small>Год</small></button>
+    </nav>
+  </div>
+
+  <dialog id="modal" class="modal"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
