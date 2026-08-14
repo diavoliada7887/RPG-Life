@@ -1,0 +1,13 @@
+{
+  "name": "RPG Live",
+  "short_name": "RPG Live",
+  "description": "Ты не обязана выполнить всю карту. Тебе надо прожить своего персонажа.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0e1016",
+  "theme_color": "#11131a",
+  "lang": "ru",
+  "icons": [
+    {"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
