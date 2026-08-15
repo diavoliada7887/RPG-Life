@@ -1,4 +1,4 @@
-const CACHE='rpg-live-v5-elemental-bars';
+const CACHE='rpg-live-v6-elemental-bars-fix';
 const ASSETS=[
   './','./index.html','./styles.css','./fantasy.css','./rpg-assets.css','./elemental-bars.css','./app.js','./fantasy-patch.js','./rpg-assets.js','./elemental-bars.js','./manifest.webmanifest','./icon.svg',
   './assets/rpg/elf_chronist_01.png','./assets/rpg/dwarf_supplier_01.png','./assets/rpg/dragon_mainquest_01.png','./assets/rpg/bard_herald_01.png','./assets/rpg/spirit_buff_01.png','./assets/rpg/gremlin_debuff_01.png','./assets/rpg/popup_quest_accepted_01.png',
