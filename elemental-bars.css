@@ -1,0 +1,60 @@
+/* RPG Live — elemental branch progress bars */
+.branch-card.has-elemental-progress .rhythm{display:none}
+.elemental-progress{
+  position:relative;
+  width:100%;
+  height:112px;
+  margin:8px 0 4px;
+  overflow:visible;
+  isolation:isolate;
+}
+.elemental-progress-art{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  user-select:none;
+  pointer-events:none;
+  -webkit-user-drag:none;
+  filter:drop-shadow(0 10px 18px rgba(76,55,111,.16));
+  z-index:1;
+}
+.elemental-progress-dim{
+  position:absolute;
+  top:47.5%;
+  height:13%;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(28,22,41,.45),rgba(22,17,35,.66));
+  box-shadow:inset 12px 0 18px rgba(0,0,0,.08);
+  backdrop-filter:saturate(.55) brightness(.78);
+  z-index:2;
+  pointer-events:none;
+  transition:left .5s ease;
+}
+.elemental-progress-value{
+  position:absolute;
+  right:4px;
+  bottom:0;
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:rgba(255,250,244,.84);
+  border:1px solid rgba(216,190,226,.58);
+  box-shadow:0 5px 12px rgba(72,49,100,.08);
+  color:#5c456e;
+  z-index:3;
+  pointer-events:none;
+}
+.elemental-progress-value b{font:700 12px Georgia,serif;color:#704f84}
+.elemental-progress-value span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9a7f73}
+
+@media(max-width:800px){
+  .elemental-progress{height:100px}
+}
+@media(max-width:500px){
+  .elemental-progress{height:92px;margin-left:-3px;margin-right:-3px;width:calc(100% + 6px)}
+  .elemental-progress-value{right:0;bottom:-1px}
+}
