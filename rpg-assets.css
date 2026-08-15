@@ -102,18 +102,54 @@
   opacity:.88;
 }
 
-.quick { position:relative; overflow:hidden; min-height:92px; }
-.quick.has-quick-creature { padding-right:54px; }
-.rpg-quick-creature {
-  position:absolute;
-  right:-8px;
-  bottom:-5px;
-  width:67px;
-  height:72px;
-  opacity:.83;
+/* Быстрый ввод: чистые фэнтезийные медальоны, без персонажей */
+.rpg-quick-creature { display:none !important; }
+.quick {
+  position:relative;
+  overflow:hidden;
+  min-height:92px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:7px;
 }
-.quick.has-quick-creature b,
-.quick.has-quick-creature > span { position:relative; z-index:1; }
+.quick.has-quick-creature { padding-right:10px; }
+.quick > span:first-child {
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:14px;
+  position:relative;
+  font-size:0 !important;
+  color:#fff;
+  background:linear-gradient(145deg,#8f6bce,#5fc7bd);
+  border:1px solid rgba(255,255,255,.9);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.22),
+    0 6px 14px rgba(91,62,130,.14);
+}
+.quick > span:first-child::after {
+  font-size:21px;
+  line-height:1;
+  font-family:Georgia,"Times New Roman",serif;
+  color:#fff8da;
+  text-shadow:0 1px 0 rgba(83,50,105,.32),0 0 8px rgba(255,231,153,.35);
+}
+.quick[data-quick="body"] > span:first-child { background:linear-gradient(145deg,#5ebcaf,#4a92bb); }
+.quick[data-quick="body"] > span:first-child::after { content:"⚔"; }
+.quick[data-quick="creative"] > span:first-child { background:linear-gradient(145deg,#b07ad7,#8064c7); }
+.quick[data-quick="creative"] > span:first-child::after { content:"✦"; font-size:24px; }
+.quick[data-quick="work"] > span:first-child { background:linear-gradient(145deg,#e0aa48,#b87d31); }
+.quick[data-quick="work"] > span:first-child::after { content:"◆"; font-size:18px; }
+.quick[data-quick="study"] > span:first-child { background:linear-gradient(145deg,#729be0,#8a76d0); }
+.quick[data-quick="study"] > span:first-child::after { content:"✎"; font-size:23px; }
+.quick[data-quick="infrastructure"] > span:first-child { background:linear-gradient(145deg,#dc975f,#bd704b); }
+.quick[data-quick="infrastructure"] > span:first-child::after { content:"⚒"; font-size:21px; }
+.quick[data-quick="publicity"] > span:first-child { background:linear-gradient(145deg,#7bb16c,#54a99d); }
+.quick[data-quick="publicity"] > span:first-child::after { content:"☄"; font-size:22px; }
+.quick b { margin-top:0; }
 
 .rpg-quest-popup {
   position:fixed;
