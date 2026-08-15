@@ -1,0 +1,172 @@
+/* RPG Live — generated creature pack integration */
+.quest-main,
+.branch-card,
+.quest-row,
+#app .card { position:relative; }
+
+.rpg-mascot,
+.rpg-state-creature,
+.rpg-quest-creature,
+.rpg-quick-creature {
+  user-select:none;
+  -webkit-user-drag:none;
+  pointer-events:none;
+  object-fit:contain;
+  filter:drop-shadow(0 12px 16px rgba(78,55,105,.16));
+}
+
+.quest-main.has-rpg-mascot {
+  min-height:235px;
+  padding-right:215px;
+  overflow:hidden;
+}
+.quest-main > .rpg-dragon {
+  position:absolute;
+  width:215px;
+  height:215px;
+  right:-14px;
+  bottom:-15px;
+  z-index:0;
+}
+.quest-main.has-rpg-mascot > :not(.rpg-mascot) { position:relative; z-index:1; }
+.quest-main.has-rpg-mascot::before {
+  content:"";
+  position:absolute;
+  right:52px;
+  bottom:26px;
+  width:135px;
+  height:135px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(106,201,199,.25),rgba(173,132,224,.11) 50%,transparent 72%);
+  filter:blur(5px);
+}
+
+.state { position:relative; overflow:hidden; min-height:82px; }
+.state .state-icon { display:none; }
+.rpg-state-creature {
+  width:68px;
+  height:68px;
+  flex:0 0 68px;
+  margin:-5px 2px -5px -4px;
+  align-self:center;
+}
+.state.has-buff-creature { background:linear-gradient(115deg,rgba(235,252,246,.78),rgba(255,255,255,.58)); }
+.state.has-debuff-creature { background:linear-gradient(115deg,rgba(247,238,255,.82),rgba(255,249,247,.64)); }
+.rpg-state-creature.is-debuff { transform:rotate(-4deg); }
+
+.branch-card.has-rpg-mascot {
+  min-height:190px;
+  padding-right:128px;
+  overflow:hidden;
+}
+.branch-card > .rpg-branch-mascot {
+  position:absolute;
+  right:-13px;
+  bottom:-14px;
+  width:138px;
+  height:150px;
+  opacity:.92;
+}
+.branch-card > .rpg-bard { width:145px; }
+.branch-card > .rpg-elf { width:132px; }
+.branch-card > .rpg-spirit { width:125px; }
+.branch-card.has-rpg-mascot > :not(.rpg-mascot) { position:relative; z-index:1; }
+
+#app .card.has-rpg-mascot:has(.rpg-memory-elf) {
+  padding-right:165px;
+  min-height:270px;
+  overflow:hidden;
+}
+.rpg-memory-elf {
+  position:absolute;
+  width:178px;
+  height:230px;
+  right:-17px;
+  bottom:-15px;
+  opacity:.92;
+}
+#app .card.has-rpg-mascot:has(.rpg-memory-elf) > :not(.rpg-mascot) { position:relative; z-index:1; }
+
+.quest-row.has-quest-creature {
+  position:relative;
+  padding-right:94px;
+  overflow:hidden;
+  min-height:128px;
+}
+.rpg-quest-creature {
+  position:absolute;
+  width:92px;
+  height:100px;
+  right:-5px;
+  bottom:-7px;
+  opacity:.88;
+}
+
+.quick { position:relative; overflow:hidden; min-height:92px; }
+.quick.has-quick-creature { padding-right:54px; }
+.rpg-quick-creature {
+  position:absolute;
+  right:-8px;
+  bottom:-5px;
+  width:67px;
+  height:72px;
+  opacity:.83;
+}
+.quick.has-quick-creature b,
+.quick.has-quick-creature > span { position:relative; z-index:1; }
+
+.rpg-quest-popup {
+  position:fixed;
+  left:50%;
+  top:18%;
+  width:min(620px,calc(100vw - 20px));
+  aspect-ratio:3/2;
+  transform:translate(-50%,-24px) scale(.88);
+  opacity:0;
+  pointer-events:none;
+  z-index:120;
+  transition:opacity .22s ease,transform .42s cubic-bezier(.16,1.35,.35,1);
+  filter:drop-shadow(0 24px 35px rgba(72,51,99,.24));
+}
+.rpg-quest-popup.show { opacity:1; transform:translate(-50%,0) scale(1); }
+.rpg-quest-popup > img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.rpg-quest-popup-copy {
+  position:absolute;
+  left:23%;
+  right:18%;
+  top:43%;
+  transform:translateY(-50%);
+  text-align:center;
+  color:#5b3f72;
+  text-shadow:0 1px 0 rgba(255,255,255,.8);
+}
+.rpg-quest-popup-copy b {
+  display:block;
+  font:700 clamp(22px,4vw,36px)/1.05 Georgia,serif;
+  color:#6f477f;
+}
+.rpg-quest-popup-copy small {
+  display:block;
+  margin-top:7px;
+  font-weight:700;
+  color:#9a6a35;
+}
+
+@media(max-width:800px) {
+  .quest-main.has-rpg-mascot { padding-right:145px; min-height:230px; }
+  .quest-main > .rpg-dragon { width:155px; height:170px; right:-18px; bottom:-10px; opacity:.93; }
+  .branch-card.has-rpg-mascot { padding-right:105px; }
+  .branch-card > .rpg-branch-mascot { width:112px; height:128px; opacity:.86; }
+  #app .card.has-rpg-mascot:has(.rpg-memory-elf) { padding-right:112px; }
+  .rpg-memory-elf { width:128px; height:180px; right:-23px; opacity:.82; }
+}
+
+@media(max-width:500px) {
+  .quest-main.has-rpg-mascot { padding-right:20px; padding-bottom:132px; }
+  .quest-main > .rpg-dragon { width:150px; height:145px; right:-8px; bottom:-10px; }
+  .quest-main.has-rpg-mascot::before { right:14px; bottom:5px; }
+  .branch-card.has-rpg-mascot { padding-right:92px; }
+  .rpg-quest-popup { top:24%; width:calc(100vw - 8px); }
+  .rpg-quest-popup-copy { left:20%; right:15%; top:44%; }
+  .rpg-quest-popup-copy small { display:none; }
+}
