@@ -71,26 +71,6 @@
     });
   }
 
-  function decorateQuickButtons() {
-    document.querySelectorAll('.quick').forEach(btn => {
-      if (btn.dataset.rpgDecorated) return;
-      const label = (btn.textContent || '').toLowerCase();
-      const map = [
-        ['инфраструкт', 'dwarf_supplier_01.png'],
-        ['публич', 'bard_herald_01.png'],
-        ['обуч', 'elf_chronist_01.png'],
-        ['творч', 'spirit_buff_01.png']
-      ];
-      const hit = map.find(([key]) => label.includes(key));
-      if (hit) {
-        const img = makeImg(hit[1], 'rpg-quick-creature', '');
-        btn.appendChild(img);
-        btn.classList.add('has-quick-creature');
-      }
-      btn.dataset.rpgDecorated = '1';
-    });
-  }
-
   function ensureQuestPopup() {
     let popup = document.querySelector('#rpgQuestPopup');
     if (popup) return popup;
@@ -122,7 +102,6 @@
     decorateBranches();
     decorateMemory();
     decorateQuestRows();
-    decorateQuickButtons();
   }
 
   let scheduled = false;
