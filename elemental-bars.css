@@ -8,6 +8,7 @@
 .branch-card.has-elemental-progress .rhythm{display:none}
 
 .elemental-progress{
+  --stage-scale:1;
   position:relative;
   width:calc(100% + 4px);
   height:168px;
@@ -15,19 +16,70 @@
   overflow:hidden;
   isolation:isolate;
 }
-.elemental-progress-art{
+
+/* Картинка и бегунок живут в одном масштабируемом слое. */
+.elemental-progress-stage{
   position:absolute;
   left:50%;
   top:50%;
-  width:100%;
-  height:auto;
-  max-width:none;
+  width:calc(100% * var(--stage-scale));
+  aspect-ratio:3/2;
   transform:translate(-50%,-50%);
+  z-index:1;
+  pointer-events:none;
+}
+.elemental-progress-art{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
   user-select:none;
   pointer-events:none;
   -webkit-user-drag:none;
   filter:drop-shadow(0 14px 22px rgba(65,45,102,.18));
-  z-index:1;
+}
+
+/* Невидимая дорожка совпадает с реальной магической полосой на арте. */
+.elemental-progress-track{
+  position:absolute;
+  height:7.5%;
+  transform:translateY(-50%);
+  pointer-events:none;
+}
+.elemental-progress-marker{
+  position:absolute;
+  top:50%;
+  width:2px;
+  height:145%;
+  transform:translate(-50%,-50%);
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,250,213,.98) 18%,rgba(255,220,103,1) 50%,rgba(255,250,213,.98) 82%,rgba(255,255,255,0));
+  box-shadow:0 0 7px rgba(255,221,99,.95),0 0 16px rgba(255,242,184,.82);
+  z-index:3;
+}
+.elemental-progress-marker::before,
+.elemental-progress-marker::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  width:8px;
+  height:8px;
+  transform:translateX(-50%) rotate(45deg);
+  border:1px solid rgba(255,248,214,.98);
+  background:linear-gradient(135deg,#fff3ad,#ffc93d);
+  box-shadow:0 0 8px rgba(255,217,78,.95),0 0 13px rgba(255,244,180,.7);
+}
+.elemental-progress-marker::before{top:-5px}
+.elemental-progress-marker::after{bottom:-5px}
+.elemental-progress-marker i{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:22px;
+  height:22px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,245,180,.32),rgba(255,223,95,.10) 46%,transparent 70%);
 }
 
 .elemental-progress-value{
@@ -53,13 +105,11 @@
 @media(max-width:800px){
   .branch-card.has-elemental-progress{min-height:238px;padding-right:16px !important}
   .elemental-progress{
+    --stage-scale:1.12;
     height:150px;
     width:calc(100% + 8px);
     margin-left:-4px;
     margin-right:-4px;
-  }
-  .elemental-progress-art{
-    width:112%;
   }
 }
 
@@ -69,13 +119,11 @@
     padding-right:14px !important;
   }
   .elemental-progress{
+    --stage-scale:1.32;
     height:128px;
     width:calc(100% + 14px);
     margin-left:-7px;
     margin-right:-7px;
-  }
-  .elemental-progress-art{
-    width:132%;
   }
   .elemental-progress-value{
     right:2px;
@@ -84,9 +132,10 @@
   }
   .elemental-progress-value b{font-size:12px}
   .elemental-progress-value span{font-size:8px}
+  .elemental-progress-marker::before,
+  .elemental-progress-marker::after{width:7px;height:7px}
 }
 
 @media(max-width:380px){
-  .elemental-progress{height:118px}
-  .elemental-progress-art{width:145%}
+  .elemental-progress{--stage-scale:1.45;height:118px}
 }
