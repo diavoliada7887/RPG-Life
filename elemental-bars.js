@@ -11,13 +11,18 @@
 
   function decorateBars(){
     document.querySelectorAll('.branch-card').forEach(card => {
-      if (card.querySelector('.elemental-progress')) return;
       const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
       const cfg = bars.find(x => title.includes(x.key));
       if (!cfg) return;
 
+      // Внутри стихийной шкалы уже есть собственный хранитель — старый персонаж карточки здесь лишний.
+      card.querySelectorAll(':scope > .rpg-branch-mascot').forEach(el => el.remove());
+      card.classList.remove('has-rpg-mascot');
+
+      if (card.querySelector('.elemental-progress')) return;
       const rhythm = card.querySelector('.rhythm');
       if (!rhythm) return;
+
       const total = rhythm.querySelectorAll('i').length || 8;
       const active = rhythm.querySelectorAll('i.on').length;
       const percent = Math.max(0, Math.min(100, Math.round(active / total * 100)));
@@ -26,17 +31,17 @@
       wrap.className = 'elemental-progress';
       wrap.dataset.element = cfg.name;
       wrap.dataset.progress = String(percent);
+
+      // На всех артах рабочая магическая дорожка занимает примерно центральные 23–88% ширины.
+      // Сам арт НЕ затемняем: показываем честный прогресс светящимся маркером поверх него.
+      const innerStart = 23;
+      const innerEnd = 88;
+      const markerX = innerStart + (innerEnd - innerStart) * (percent / 100);
+
       wrap.innerHTML = `
         <img class="elemental-progress-art" src="${BASE + cfg.file}" alt="${cfg.name}: прогресс ветки ${percent}%" draggable="false">
-        <div class="elemental-progress-dim" aria-hidden="true"></div>
+        <div class="elemental-progress-marker" aria-hidden="true" style="left:${markerX}%"><i></i></div>
         <div class="elemental-progress-value"><b>${percent}%</b><span>${cfg.name}</span></div>`;
-
-      // У изображений одна композиционная семья: внутренняя магическая полоса занимает примерно 24–88% ширины.
-      const innerStart = 24;
-      const innerEnd = 88;
-      const dimStart = innerStart + (innerEnd - innerStart) * (percent / 100);
-      wrap.querySelector('.elemental-progress-dim').style.left = `${dimStart}%`;
-      wrap.querySelector('.elemental-progress-dim').style.right = `${100 - innerEnd}%`;
 
       rhythm.insertAdjacentElement('afterend', wrap);
       card.classList.add('has-elemental-progress');
