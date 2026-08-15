@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#11131a" />
+  <meta name="theme-color" content="#f4efff" />
   <meta name="description" content="RPG Live — прожить своего персонажа, а не закрыть всю карту." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="fantasy.css" />
   <title>RPG Live</title>
 </head>
 <body>
@@ -15,7 +16,7 @@
     <header class="topbar">
       <button class="brand" data-nav="today" aria-label="RPG Live — на главную">
         <span class="brand-mark">R</span>
-        <span><b>RPG Live</b><small>жизнь не обязана быть выполнена</small></span>
+        <span><b>RPG Live</b><small>своя сага важнее пустых галочек</small></span>
       </button>
       <div class="top-actions">
         <button id="installBtn" class="ghost hidden">Установить</button>
@@ -38,5 +39,6 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="app.js" defer></script>
+  <script src="fantasy-patch.js" defer></script>
 </body>
 </html>
