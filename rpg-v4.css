@@ -1,0 +1,9 @@
+.creative-menu{grid-column:span 2;background:linear-gradient(135deg,#fff,#faf3ff)}
+.creative-event{border-color:#d8c5e2;background:linear-gradient(135deg,#fff,#fbf6ff)}
+.bank-today{display:grid;gap:5px;margin-top:10px;padding-top:9px;border-top:1px dashed #e4d7e7}
+.bank-today>div{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px;color:#75677b;background:#fff;border:1px solid #e8ddea;border-radius:10px;padding:7px 9px}
+.bank-today button{border:0;background:transparent;color:#a26464;font-size:15px}
+.modal textarea{width:100%;box-sizing:border-box;min-height:90px;padding:10px 11px;border:1px solid #d9c9df;border-radius:11px;background:#fff;color:#54475b;resize:vertical}
+.modal hr{border:0;border-top:1px dashed #ddcfe3;margin:14px 0}
+.activity-menu.creative-menu summary>span{background:#efe4f7;color:#7a4e94}
+@media(max-width:520px){.creative-menu{grid-column:span 1}}
