@@ -13,7 +13,7 @@
   width:calc(100% + 4px);
   height:168px;
   margin:0 -2px 2px;
-  overflow:hidden;
+  overflow:visible;
   isolation:isolate;
 }
 
@@ -103,27 +103,34 @@
 .elemental-progress-value span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#9a7f73}
 
 @media(max-width:800px){
-  .branch-card.has-elemental-progress{min-height:238px;padding-right:16px !important}
+  .branch-card.has-elemental-progress{
+    min-height:240px;
+    padding-right:16px !important;
+    overflow:visible;
+  }
   .elemental-progress{
-    --stage-scale:1.12;
+    --stage-scale:1;
     height:150px;
-    width:calc(100% + 8px);
-    margin-left:-4px;
-    margin-right:-4px;
+    width:100%;
+    margin-left:0;
+    margin-right:0;
+    overflow:visible;
   }
 }
 
 @media(max-width:500px){
   .branch-card.has-elemental-progress{
-    min-height:218px;
+    min-height:225px;
     padding-right:14px !important;
+    overflow:visible;
   }
   .elemental-progress{
-    --stage-scale:1.32;
-    height:128px;
-    width:calc(100% + 14px);
-    margin-left:-7px;
-    margin-right:-7px;
+    --stage-scale:1;
+    height:138px;
+    width:100%;
+    margin-left:0;
+    margin-right:0;
+    overflow:visible;
   }
   .elemental-progress-value{
     right:2px;
@@ -137,5 +144,5 @@
 }
 
 @media(max-width:380px){
-  .elemental-progress{--stage-scale:1.45;height:118px}
+  .elemental-progress{--stage-scale:1;height:128px}
 }
