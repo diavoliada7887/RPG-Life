@@ -15,7 +15,6 @@
       const cfg = bars.find(x => title.includes(x.key));
       if (!cfg) return;
 
-      // Внутри стихийной шкалы уже есть собственный хранитель — старый персонаж карточки здесь лишний.
       card.querySelectorAll(':scope > .rpg-branch-mascot').forEach(el => el.remove());
       card.classList.remove('has-rpg-mascot');
 
@@ -31,16 +30,8 @@
       wrap.className = 'elemental-progress';
       wrap.dataset.element = cfg.name;
       wrap.dataset.progress = String(percent);
-
-      // На всех артах рабочая магическая дорожка занимает примерно центральные 23–88% ширины.
-      // Сам арт НЕ затемняем: показываем честный прогресс светящимся маркером поверх него.
-      const innerStart = 23;
-      const innerEnd = 88;
-      const markerX = innerStart + (innerEnd - innerStart) * (percent / 100);
-
       wrap.innerHTML = `
         <img class="elemental-progress-art" src="${BASE + cfg.file}" alt="${cfg.name}: прогресс ветки ${percent}%" draggable="false">
-        <div class="elemental-progress-marker" aria-hidden="true" style="left:${markerX}%"><i></i></div>
         <div class="elemental-progress-value"><b>${percent}%</b><span>${cfg.name}</span></div>`;
 
       rhythm.insertAdjacentElement('afterend', wrap);
