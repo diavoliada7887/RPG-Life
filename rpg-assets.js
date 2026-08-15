@@ -137,7 +137,7 @@
 
   document.addEventListener('click', e => {
     const accept = e.target.closest('[data-quest-action="accept"]');
-    if (accept) setTimeout(showQuestPopup, 80);
+    if (accept) setTimeout(() => { if (!accept.isConnected) showQuestPopup(); }, 100);
   });
 
   const observer = new MutationObserver(scheduleDecorate);
