@@ -1,4 +1,4 @@
-const CACHE='rpg-live-v3-creatures';
+const CACHE='rpg-live-v4-quick-icons';
 const ASSETS=[
   './','./index.html','./styles.css','./fantasy.css','./rpg-assets.css','./app.js','./fantasy-patch.js','./rpg-assets.js','./manifest.webmanifest','./icon.svg',
   './assets/rpg/elf_chronist_01.png','./assets/rpg/dwarf_supplier_01.png','./assets/rpg/dragon_mainquest_01.png','./assets/rpg/bard_herald_01.png','./assets/rpg/spirit_buff_01.png','./assets/rpg/gremlin_debuff_01.png','./assets/rpg/popup_quest_accepted_01.png'
