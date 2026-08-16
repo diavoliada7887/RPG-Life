@@ -1,0 +1,44 @@
+/* RPG Life v22 — usability pass: buffs, arena, resources */
+
+/* Basic control hygiene */
+.modal input[type="checkbox"],.modal input[type="radio"],.buff-mode-switch input{width:18px!important;height:18px!important;padding:0!important;flex:0 0 18px}
+.modal textarea{width:100%;box-sizing:border-box;padding:10px 11px;border:1px solid #d9c9df;border-radius:11px;background:#fff;color:#54475b;min-height:92px}
+.modal{background:#fffaf6;color:#54475b}.modal-head h2{color:#4f3b61}.close{background:#f1e8f4;color:#76558f}
+.modal form label{color:#67586e}
+
+/* Seven destinations should still look like one navigation bar. */
+.bottom-nav{width:min(760px,calc(100% - 24px));grid-template-columns:repeat(7,minmax(0,1fr))}
+.bottom-nav button{min-width:0}
+@media(max-width:620px){.bottom-nav{display:flex;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.bottom-nav::-webkit-scrollbar{display:none}.bottom-nav button{flex:0 0 64px;min-width:64px}}
+
+/* Resource colours */
+.resource-item{--resource:#9276ad;--resource-soft:#eee6f4}
+.resource-item.resource-inspiration{--resource:#9b63c7;--resource-soft:#efe3f7}
+.resource-item.resource-calm{--resource:#4f9a8c;--resource-soft:#dff1ed}
+.resource-item.resource-energy{--resource:#d8943f;--resource-soft:#f8ead6}
+.resource-item.resource-recognition{--resource:#c46f98;--resource-soft:#f7e2ec}
+.resource-item .signed-bar{background:var(--resource-soft)!important;border-color:color-mix(in srgb,var(--resource) 24%,white)!important}
+.resource-item .resource-dot{background:var(--resource)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--resource) 17%,transparent)}
+.resource-item .resource-number{color:var(--resource)!important}.resource-item .resource-delta{color:color-mix(in srgb,var(--resource) 82%,#493d58)}
+.resource-item .zero-mark{background:color-mix(in srgb,var(--resource) 35%,white)!important}
+
+/* Active buff artwork on Today */
+.active-buff-showcase22{display:flex;gap:10px;overflow:auto;padding-bottom:2px}.active-buff-mini22{flex:0 0 min(250px,75vw);display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:center;padding:10px;border:1px solid #e3d5e7;border-radius:15px;background:linear-gradient(135deg,#fff,#faf4fc)}
+.buff-thumb22{width:54px;height:54px;border-radius:13px;overflow:hidden;background:#f1e8f5;display:grid;place-items:center;color:#80628f;font-size:23px;border:1px solid #dfd0e5}.buff-thumb22 img{width:100%;height:100%;object-fit:cover}.active-buff-mini22 b,.active-buff-mini22 small{display:block}.active-buff-mini22 small{font-size:10px;color:#948597;margin-top:3px}
+
+/* Buff page */
+.buff-page-grid22{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}.buff-card22{background:#fff;border:1px solid #e0d3e5;border-radius:18px;padding:14px;display:grid;grid-template-columns:68px minmax(0,1fr);gap:13px;position:relative}.buff-card22.active{border-color:#b998ca;box-shadow:0 8px 22px rgba(107,72,129,.10)}.buff-card22 .buff-thumb22{width:68px;height:68px}.buff-card-main22{min-width:0}.buff-card-head22{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.buff-card-head22 h3{margin:3px 0 5px}.buff-status22{font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#9a8a9e}.buff-card22.active .buff-status22{color:#76558f}.buff-card22 p{margin:7px 0;color:#7d6e82;font-size:12px;line-height:1.4}.buff-rule22,.buff-effect22{font-size:11px;color:#75647b;margin-top:6px}.buff-effect22{font-weight:800;color:#76558f}.buff-card-actions22{display:flex;gap:5px;align-items:center}.buff-card-actions22 button{padding:7px 9px;border-radius:10px}
+@media(max-width:760px){.buff-page-grid22{grid-template-columns:1fr}}
+
+/* Buff editor: selected practices first, catalogue hidden behind Add. */
+.buff-editor-section22{border:1px solid #e4d8e7;border-radius:15px;padding:12px;background:#fbf8fc;display:grid;gap:10px}.buff-editor-section22>header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.buff-editor-section22 h3{margin:0;font-size:15px}.buff-editor-section22 header small{display:block;color:#95879a;font-size:10px;margin-top:3px}.buff-mode-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.buff-mode-switch label{display:block!important}.buff-mode-switch input{position:absolute;opacity:0;pointer-events:none}.buff-mode-switch span{display:block;text-align:center;padding:9px 8px;border:1px solid #ddd0e2;border-radius:11px;background:#fff;color:#746079;font-size:11px;cursor:pointer}.buff-mode-switch input:checked+span{background:#76558f;color:#fff;border-color:#76558f}
+.selected-practices22{display:flex;gap:6px;flex-wrap:wrap}.practice-chip22{display:inline-flex;align-items:center;gap:5px;border:1px solid #d9c7e0;background:#fff;border-radius:999px;padding:6px 9px;font-size:11px;color:#67536f}.practice-chip22 button{border:0;background:none;color:#9b718c;padding:0;font-size:15px;line-height:1}.practice-chip22.empty{border-style:dashed;color:#9b8c9e}
+.practice-picker22{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.practice-picker22 select{min-width:0}.practice-picker22 .soft{white-space:nowrap}.buff-image-editor22{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:center}.buff-image-editor22 .buff-thumb22{width:72px;height:72px}.buff-image-actions22{display:flex;gap:7px;flex-wrap:wrap}.buff-image-actions22 label{display:inline-flex!important}.buff-image-actions22 input{display:none}
+
+/* Arena */
+.arena-active-grid22{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.arena-active-grid22>.boss-card:first-child{grid-column:1/-1}.arena-section-head22{display:flex;justify-content:space-between;align-items:center;margin:20px 0 10px}.arena-section-head22 h2{margin:0}.arena-defeated22{display:grid;gap:8px}.defeated-boss-row22{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;background:#fff;border:1px solid #e3d7e6;border-radius:14px}.defeated-boss-row22 .boss-portrait{width:48px;height:48px}.defeated-boss-row22 b,.defeated-boss-row22 small{display:block}.defeated-boss-row22 small{font-size:10px;color:#948597;margin-top:2px}
+.boss-card22 .boss-section{margin-top:12px}.boss-progress-row22{padding:9px 0;border-top:1px dashed #e6dbe8}.boss-progress-row22:first-child{border-top:0}.boss-progress-head22{display:flex;justify-content:space-between;gap:10px;align-items:center}.boss-progress-head22 b{font-size:12px}.progress-edit22{border:0;background:#f6eff8;color:#76558f;border-radius:9px;padding:5px 8px;font-size:11px}.boss-collapse22{margin-top:9px;border:1px solid #e3d7e6;border-radius:13px;background:#fbf8fc;overflow:hidden}.boss-collapse22 summary{cursor:pointer;list-style:none;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;color:#654d72}.boss-collapse22 summary::-webkit-details-marker{display:none}.boss-collapse22 summary span{color:#97879b;font-weight:600}.boss-collapse22 .microtask-list{padding:0 9px 9px}.boss-collapse22 .microtask-list label{background:#fff}.boss-outcome-collapse22 p{margin:0;padding:0 12px 12px;color:#77677d;font-size:12px;line-height:1.45}.boss-victory-button,.second-coming{width:100%}.boss-card22 .victory-locked{margin-top:10px}
+@media(max-width:800px){.arena-active-grid22{grid-template-columns:1fr}.arena-active-grid22>.boss-card:first-child{grid-column:auto}}
+
+/* Service buttons should not masquerade as primary actions. */
+@media(max-width:520px){.modal-actions{justify-content:flex-end}.modal-actions>*{width:auto!important;flex:0 0 auto}.modal-actions .primary{min-width:130px}.modal-actions .danger-soft{margin-right:auto}.buff-mode-switch{grid-template-columns:1fr}.practice-picker22{grid-template-columns:1fr}.practice-picker22 .soft{justify-self:start}}
