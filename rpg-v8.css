@@ -1,0 +1,10 @@
+/* RPG Life v8 — victory ritual */
+.victory-outcome{margin-top:14px;padding:13px 15px;border:1px solid #ead8aa;border-radius:14px;background:linear-gradient(135deg,#fffdf5,#fff8df)}
+.victory-outcome p{margin:6px 0 0;line-height:1.45;color:#5d5141}
+.boss-victory-button{width:100%;margin-top:14px;border:1px solid #d8ad48;border-radius:16px;padding:14px 18px;background:linear-gradient(135deg,#fff9dd,#f7e6a8);box-shadow:0 8px 22px rgba(177,132,37,.16);display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;color:#5e4816;cursor:pointer}
+.boss-victory-button span{font-size:22px}.boss-victory-button b{font-size:18px;letter-spacing:.08em}.boss-victory-button small{font-size:10px;opacity:.75}
+.boss-victory-confirmed{margin-top:14px}.victory-locked{margin-top:12px;padding:10px 12px;border:1px dashed #d9d0dc;border-radius:12px;color:#8a7d90;display:flex;gap:8px;align-items:center}
+.victory-modal{text-align:center;position:relative;padding:8px 4px 2px}.victory-close{position:absolute;right:0;top:0}.victory-sigil{font-size:42px;margin:4px 0 6px;color:#b38323;text-shadow:0 4px 14px rgba(180,132,32,.22)}
+.victory-modal h2{font-size:30px;letter-spacing:.1em;margin:4px 0;color:#6f5315}.victory-modal h3{margin:0 0 14px;font-size:18px}.victory-modal-outcome{margin:14px 0;padding:14px;border:1px solid #ead8aa;border-radius:14px;background:#fffaf0;text-align:left}.victory-modal-outcome p{margin:6px 0 0;line-height:1.5}.victory-modal-reward{margin:10px 0 16px;font-weight:700}.victory-confirm{width:100%}
+.calendar-day.boss-win-day{outline:2px solid #b98a28;outline-offset:1px;box-shadow:0 0 0 3px rgba(185,138,40,.12)}.boss-win-mark{position:absolute;right:2px;top:1px;font-size:8px;line-height:1}.calendar-day{position:relative}.boss-memory{border-color:#d9b75d!important;background:linear-gradient(135deg,#fffdf5,#fff8df)!important}.boss-memory small{display:block;margin-top:5px;font-weight:400;line-height:1.4}
+@media(max-width:520px){.boss-victory-button{grid-template-columns:auto 1fr}.boss-victory-button small{grid-column:1/-1}.victory-modal h2{font-size:25px}}
