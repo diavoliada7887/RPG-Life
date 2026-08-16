@@ -1,0 +1,5 @@
+.quiet-practice-toggle{display:flex!important;align-items:flex-start;gap:10px;margin:14px 0;padding:12px 14px;border:1px solid rgba(111,84,165,.18);border-radius:14px;background:rgba(116,88,170,.055)}
+.quiet-practice-toggle input{width:18px!important;height:18px;margin-top:2px;flex:0 0 auto}
+.quiet-practice-toggle span{display:flex;flex-direction:column;gap:3px}
+.quiet-practice-toggle small{opacity:.68;font-size:.82em}
+.form-section>.v2-sub{display:block;margin:4px 0 8px}
