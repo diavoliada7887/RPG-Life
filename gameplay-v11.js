@@ -2,6 +2,24 @@
 (function(){
   const rankLabel=r=>({gray:'Серый',green:'Зелёный',blue:'Синий',purple:'Фиолетовый',gold:'Золотой',epic:'Фиолетовый'})[r]||r||'Без ранга';
 
+  function splitTaskText(text){
+    return String(text||'').split(/(?:\r?\n|;)+/).map(x=>x.trim()).filter(Boolean);
+  }
+  function migrateTaskArray(arr=[]){
+    const out=[];
+    (arr||[]).forEach(item=>{
+      const parts=splitTaskText(item.label);
+      if(parts.length<=1){out.push(item);return;}
+      parts.forEach((label,i)=>out.push({id:i===0?item.id:uid(),label,done:!!item.done}));
+    });
+    return out;
+  }
+  (state.bosses||[]).forEach(b=>{
+    b.microtasks=migrateTaskArray(b.microtasks||[]);
+    b.final=migrateTaskArray(b.final||[]);
+  });
+  save();
+
   function rowsHTML(stages=[]){
     return (stages||[]).map(s=>progressRow({id:s.id,name:s.name,done:s.done,total:s.total})).join('');
   }
@@ -33,16 +51,17 @@
           <div class="empty-progress-hint ${(b.stages||[]).length?'hidden':''}" id="emptyProgressHint">Например: Сканирование · надо 28 888 · сделано 2 000</div>
         </div>
 
-        <label>Микрозадачи <small>по одной на строку</small><textarea name="microtasks" placeholder="Поменять обложку\nВыложить пост с новой песней\nОтветить рекламщику">${esc(lines(b.microtasks))}</textarea></label>
-        <label>Фаталити <small>последние действия перед кнопкой Победа, тоже по одной на строку</small><textarea name="finals">${esc(lines(b.final))}</textarea></label>
+        <label>Микрозадачи <small>каждая новая строка = отдельная галочка</small><textarea name="microtasks" placeholder="Поменять обложку\nВыложить пост с новой песней\nОтветить рекламщику">${esc(lines(b.microtasks))}</textarea></label>
+        <label>Фаталити <small>каждая новая строка = отдельная галочка</small><textarea name="finals">${esc(lines(b.final))}</textarea></label>
         <label>Заметка<textarea name="note">${esc(b.note||'')}</textarea></label>
         <div class="modal-actions"><button class="primary">Сохранить</button>${b.id?'<button type="button" class="danger-soft" id="deleteBossV11">Удалить босса</button>':''}</div>
       </form>`;
   }
 
   function makeTasks(text,oldArr){
-    const old=new Map((oldArr||[]).map(x=>[x.label,x]));
-    return String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).map(label=>({id:old.get(label)?.id||uid(),label,done:!!old.get(label)?.done}));
+    const old=new Map();
+    (oldArr||[]).forEach(x=>splitTaskText(x.label).forEach(label=>old.set(label,x)));
+    return splitTaskText(text).map(label=>({id:old.get(label)?.id||uid(),label,done:!!old.get(label)?.done}));
   }
 
   function editBossSimple(id=null){
