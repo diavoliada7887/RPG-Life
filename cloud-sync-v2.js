@@ -1,4 +1,4 @@
-// RPG Life cloud sync v2 — multi-device safe, cloud-authoritative when clean
+// RPG Life cloud sync v3 — Profitlab-style conflict-safe multi-device sync
 (function(){
   const SUPABASE_URL='https://yujryxybceihzqerhjqk.supabase.co';
   const SUPABASE_KEY='sb_publishable_o4akr1u5oU9a0a54O4Ymeg_V6nmzMte';
@@ -20,10 +20,10 @@
   const $=q=>document.querySelector(q);
   const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const nativeSetItem=window.__rpgNativeSetItem||Storage.prototype.setItem;
-  let currentUser=null,saving=false,bootstrapping=false,lastCloudAt=localStorage.getItem(CLOUD_STAMP)||'',saveTimer=null,pullTimer=null,lastError='';
+  let currentUser=null,syncing=false,bootstrapping=false,lastCloudAt=localStorage.getItem(CLOUD_STAMP)||'',saveTimer=null,pullTimer=null,lastError='';
 
   const isDirty=()=>localStorage.getItem(DIRTY_KEY)==='1';
-  const setDirty=v=>nativeSetItem.call(localStorage,DIRTY_KEY,v?'1':'0');
+  const setDirty=v=>{if(v)nativeSetItem.call(localStorage,DIRTY_KEY,'1');else localStorage.removeItem(DIRTY_KEY)};
   const nowIso=()=>new Date().toISOString();
 
   function ensureCloudButton(){let b=$('#cloudStatusBtn');if(b)return b;const host=$('.top-actions');if(!host)return null;b=document.createElement('button');b.id='cloudStatusBtn';b.className='cloud-status';b.type='button';b.onclick=openAccountPanel;host.prepend(b);return b}
@@ -39,7 +39,7 @@
   }
   function hideGate(){$('#cloudAuthGate')?.remove()}
 
-  function backupState(){try{const history=JSON.parse(localStorage.getItem(BACKUP_HISTORY)||'[]');history.unshift({at:nowIso(),state:JSON.parse(JSON.stringify(state))});nativeSetItem.call(localStorage,BACKUP_HISTORY,JSON.stringify(history.slice(0,10)))}catch(e){console.warn('Backup failed',e)}}
+  function backupState(){try{const history=JSON.parse(localStorage.getItem(BACKUP_HISTORY)||'[]');history.unshift({at:nowIso(),state:JSON.parse(JSON.stringify(state)),practiceLogs:JSON.parse(JSON.stringify(state.practiceLogs||[])),creativeLogs:JSON.parse(JSON.stringify(state.creativeLogs||[])),achievements:JSON.parse(JSON.stringify(state.achievements||[])),currencyLedger:JSON.parse(JSON.stringify(state.currencyLedger||[])),bosses:JSON.parse(JSON.stringify(state.bosses||[])),practices:JSON.parse(JSON.stringify(state.practices||[]))});nativeSetItem.call(localStorage,BACKUP_HISTORY,JSON.stringify(history.slice(0,12)))}catch(e){console.warn('Backup failed',e)}}
 
   function writeStateLocal(next){window.__rpgInternalStateWrite=true;try{state=next;nativeSetItem.call(localStorage,KEY,JSON.stringify(state))}finally{window.__rpgInternalStateWrite=false}if(typeof render==='function')render()}
 
@@ -51,28 +51,90 @@
 
   async function fetchRemote(){const {data,error}=await sb.from(TABLE).select('state,updated_at').eq('user_id',currentUser.id).maybeSingle();if(error)throw error;return data}
 
-  async function pushCloud(force=false){if(!currentUser||saving||bootstrapping)return;if(!force&&!isDirty())return;saving=true;setStatus('saving','Сохраняю…');try{await migrateAssets();const stamp=nowIso();const snapshot=cloudClone();const {error}=await sb.from(TABLE).upsert({user_id:currentUser.id,state:snapshot,updated_at:stamp},{onConflict:'user_id'});if(error)throw error;lastCloudAt=stamp;nativeSetItem.call(localStorage,CLOUD_STAMP,stamp);setDirty(false);setStatus('ok','Синхронизировано')}catch(e){setDirty(true);showError(e)}finally{saving=false}}
+  async function pushCloud(force=false){
+    if(!currentUser||syncing||bootstrapping)return;
+    if(!force&&!isDirty())return;
+    syncing=true;setStatus('saving','Сохраняю…');
+    try{
+      await migrateAssets();
+      const stamp=nowIso(),snapshot=cloudClone();
+      const {data,error}=await sb.from(TABLE).upsert({user_id:currentUser.id,state:snapshot,updated_at:stamp},{onConflict:'user_id'}).select('updated_at').single();
+      if(error)throw error;
+      lastCloudAt=data?.updated_at||stamp;
+      nativeSetItem.call(localStorage,CLOUD_STAMP,lastCloudAt);
+      setDirty(false);setStatus('ok','Синхронизировано');
+    }catch(e){setDirty(true);showError(e)}finally{syncing=false}
+  }
 
-  async function applyRemote(row){if(!row?.state)return;backupState();writeStateLocal(row.state);await hydrateAssets();window.__rpgInternalStateWrite=true;try{nativeSetItem.call(localStorage,KEY,JSON.stringify(state))}finally{window.__rpgInternalStateWrite=false}lastCloudAt=row.updated_at||nowIso();nativeSetItem.call(localStorage,CLOUD_STAMP,lastCloudAt);setDirty(false);if(typeof render==='function')render()}
-
-  async function pullCloud(force=false){if(!currentUser||saving||bootstrapping)return;if(!force&&isDirty()){schedulePush();return}try{const row=await fetchRemote();if(!row)return;if(force||!lastCloudAt||new Date(row.updated_at)>new Date(lastCloudAt)){setStatus('saving','Получаю…');await applyRemote(row)}setStatus('ok','Синхронизировано')}catch(e){showError(e)}}
+  async function applyRemote(row){
+    if(!row?.state)return;
+    backupState();
+    writeStateLocal(row.state);
+    await hydrateAssets();
+    window.__rpgInternalStateWrite=true;try{nativeSetItem.call(localStorage,KEY,JSON.stringify(state))}finally{window.__rpgInternalStateWrite=false}
+    lastCloudAt=row.updated_at||nowIso();
+    nativeSetItem.call(localStorage,CLOUD_STAMP,lastCloudAt);
+    setDirty(false);if(typeof render==='function')render();setStatus('ok','Синхронизировано');
+  }
 
   function schedulePush(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>pushCloud(false),SAVE_DEBOUNCE)}
   window.addEventListener('rpg-life:local-change',()=>{setDirty(true);setStatus('saving','Есть изменения…');schedulePush()});
+
+  async function syncFromCloud(quiet=true){
+    if(!currentUser||syncing||bootstrapping)return;
+    syncing=true;if(!quiet)setStatus('saving','Сверяем…');
+    try{
+      const row=await fetchRemote();
+      if(!row){syncing=false;await pushCloud(true);return}
+      const dirty=isDirty();
+      const cloudStamp=row.updated_at||'';
+      const cloudChangedSinceLast=!!(dirty&&lastCloudAt&&cloudStamp&&cloudStamp!==lastCloudAt);
+
+      if(dirty&&cloudChangedSinceLast){
+        const keepLocal=confirm('RPG Life изменён и на этом устройстве, и в облаке.\n\nОК — оставить данные этого устройства и отправить их в облако.\nОтмена — взять облачную версию.');
+        syncing=false;
+        if(keepLocal)await pushCloud(true);else await applyRemote(row);
+        return;
+      }
+      if(dirty){syncing=false;await pushCloud(true);return}
+      if(!lastCloudAt||cloudStamp!==lastCloudAt)await applyRemote(row);else setStatus('ok','Синхронизировано');
+    }catch(e){showError(e)}finally{syncing=false}
+  }
+
+  async function forcePull(){
+    if(!currentUser||syncing)return;
+    syncing=true;setStatus('saving','Получаю…');
+    try{const row=await fetchRemote();if(row?.state)await applyRemote(row)}catch(e){showError(e)}finally{syncing=false}
+  }
 
   function openAccountPanel(){
     if(!currentUser){authGate();return}
     const last=lastCloudAt?new Date(lastCloudAt).toLocaleString('ru-RU'):'ещё не было';
     const dirtyText=isDirty()?'Есть локальные изменения, ещё не отправлены':'Локальных несохранённых изменений нет';
-    const html=`<div class="modal-head"><div><div class="v2-kicker">Облако</div><h2>Синхронизация</h2></div><button class="close">×</button></div><div class="cloud-account"><div class="cloud-account-email">${safe(currentUser.email||'')}</div><div class="cloud-account-row"><span>Последняя синхронизация</span><b>${safe(last)}</b></div><div class="cloud-account-row"><span>Состояние устройства</span><b>${safe(dirtyText)}</b></div>${lastError?`<div class="cloud-auth-error">${safe(lastError)}</div>`:''}<div class="modal-actions"><button class="ghost" id="cloudPullNow">Забрать из облака</button><button class="soft" id="cloudPushNow">Сохранить сейчас</button><button class="danger-soft" id="cloudLogout">Выйти</button></div><div class="cloud-auth-note">Чистое устройство всегда получает более свежую облачную версию. Только реальные несохранённые изменения блокируют автозамену.</div></div>`;
+    const html=`<div class="modal-head"><div><div class="v2-kicker">Облако</div><h2>Синхронизация</h2></div><button class="close">×</button></div><div class="cloud-account"><div class="cloud-account-email">${safe(currentUser.email||'')}</div><div class="cloud-account-row"><span>Последняя общая версия</span><b>${safe(last)}</b></div><div class="cloud-account-row"><span>Состояние устройства</span><b>${safe(dirtyText)}</b></div>${lastError?`<div class="cloud-auth-error">${safe(lastError)}</div>`:''}<div class="modal-actions"><button class="ghost" id="cloudPullNow">Забрать из облака</button><button class="soft" id="cloudPushNow">Сохранить сейчас</button><button class="danger-soft" id="cloudLogout">Выйти</button></div><div class="cloud-auth-note">Схема как в «Профиците»: устройство помнит последнюю общую версию. Часы телефона не решают, кто прав.</div></div>`;
     if(typeof openModal!=='function')return;openModal(html);
     $('#cloudPushNow')?.addEventListener('click',async()=>{await pushCloud(true);$('#modal')?.close()});
-    $('#cloudPullNow')?.addEventListener('click',async()=>{if(confirm('Заменить текущую копию данными из облака? Перед заменой будет создана страховка.')){setDirty(false);await pullCloud(true)}$('#modal')?.close()});
+    $('#cloudPullNow')?.addEventListener('click',async()=>{if(confirm('Заменить текущую копию данными из облака? Перед заменой будет создана страховка.'))await forcePull();$('#modal')?.close()});
     $('#cloudLogout')?.addEventListener('click',async()=>{if(isDirty())await pushCloud(true).catch(()=>{});await sb.auth.signOut();currentUser=null;$('#modal')?.close();authGate()});
   }
 
-  async function bootstrapUser(){if(!currentUser)return authGate();bootstrapping=true;hideGate();setStatus('saving','Подключаю облако…');try{const remote=await fetchRemote();if(isDirty()){bootstrapping=false;await pushCloud(true);return}if(remote?.state)await applyRemote(remote);else{setDirty(true);bootstrapping=false;await pushCloud(true);return}setStatus('ok','Синхронизировано')}catch(e){showError(e)}finally{bootstrapping=false}clearInterval(pullTimer);pullTimer=setInterval(()=>{if(isDirty())pushCloud(false);else pullCloud(false)},CHECK_MS)}
+  async function bootstrapUser(){
+    if(!currentUser)return authGate();
+    bootstrapping=true;hideGate();setStatus('saving','Подключаю облако…');
+    try{bootstrapping=false;await syncFromCloud(true)}catch(e){bootstrapping=false;showError(e)}
+    clearInterval(pullTimer);pullTimer=setInterval(()=>syncFromCloud(true),CHECK_MS);
+  }
 
-  async function start(){ensureCloudButton();const {data}=await sb.auth.getSession();currentUser=data?.session?.user||null;if(currentUser)await bootstrapUser();else authGate();window.addEventListener('focus',()=>{if(isDirty())pushCloud(false);else pullCloud(false)});window.addEventListener('online',()=>{if(isDirty())pushCloud(false);else pullCloud(false)});window.addEventListener('offline',()=>setStatus('offline','Оффлайн'));sb.auth.onAuthStateChange((event,session)=>{const next=session?.user||null;if(next&&!currentUser){currentUser=next;bootstrapUser()}if(!next&&currentUser){currentUser=null;authGate()}})}
+  async function start(){
+    ensureCloudButton();
+    const {data,error}=await sb.auth.getSession();
+    if(error){showError(error);return}
+    currentUser=data?.session?.user||null;
+    if(currentUser)await bootstrapUser();else authGate();
+    window.addEventListener('focus',()=>syncFromCloud(true));
+    window.addEventListener('online',()=>syncFromCloud(true));
+    window.addEventListener('offline',()=>setStatus('offline','Оффлайн'));
+    sb.auth.onAuthStateChange((event,session)=>{const next=session?.user||null;if(next&&!currentUser){currentUser=next;bootstrapUser()}if(!next&&currentUser){currentUser=null;authGate()}});
+  }
   start();
 })();
