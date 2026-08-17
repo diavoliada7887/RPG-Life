@@ -1,13 +1,15 @@
-// RPG Life cloud sync — Supabase Auth + rpg_state + private Storage
+// RPG Life cloud sync — Supabase Auth + race-safe local-first sync
 (function(){
   const SUPABASE_URL='https://yujryxybceihzqerhjqk.supabase.co';
   const SUPABASE_KEY='sb_publishable_o4akr1u5oU9a0a54O4Ymeg_V6nmzMte';
   const TABLE='rpg_state';
   const BUCKET='rpg-assets';
   const CLOUD_STAMP='rpg-life-cloud-stamp';
+  const LOCAL_STAMP='rpg-life-local-stamp';
+  const BACKUP_KEY='rpg-life-safety-backup';
   const EMAIL_KEY='rpg-life-login-email';
   const CHECK_MS=12000;
-  const SAVE_DEBOUNCE=900;
+  const SAVE_DEBOUNCE=350;
   const SIGNED_SECONDS=60*60*24*7;
 
   if(!window.supabase?.createClient){
@@ -27,11 +29,34 @@
   let saveTimer=null;
   let pullTimer=null;
   let bootstrapping=false;
+  let internalStateWrite=false;
+  let localRevision=0;
   const hydratedItems=new WeakSet();
 
   const $=q=>document.querySelector(q);
-  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const localIso=()=>new Date().toISOString();
+  const nativeSetItem=Storage.prototype.setItem;
+
+  function schedulePush(){
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>pushCloud(),SAVE_DEBOUNCE);
+  }
+
+  // Every normal save() in the app ultimately calls localStorage.setItem(KEY,...).
+  // Catch it synchronously so a focus/poll pull cannot overwrite a just-created event.
+  Storage.prototype.setItem=function(key,value){
+    nativeSetItem.call(this,key,value);
+    if(this===localStorage&&key===KEY&&!internalStateWrite){
+      const stamp=localIso();
+      nativeSetItem.call(localStorage,LOCAL_STAMP,stamp);
+      lastObserved=String(value||'');
+      localRevision++;
+      dirty=true;
+      setStatus('saving','Есть изменения…');
+      schedulePush();
+    }
+  };
 
   function ensureCloudButton(){
     let b=$('#cloudStatusBtn');
@@ -52,9 +77,7 @@
 
   function authGate(message=''){
     let gate=$('#cloudAuthGate');
-    if(!gate){
-      gate=document.createElement('div');gate.id='cloudAuthGate';gate.className='cloud-auth-gate';document.body.appendChild(gate);
-    }
+    if(!gate){gate=document.createElement('div');gate.id='cloudAuthGate';gate.className='cloud-auth-gate';document.body.appendChild(gate)}
     const remembered=localStorage.getItem(EMAIL_KEY)||'';
     gate.innerHTML=`<div class="cloud-auth-card"><div class="cloud-auth-mark">✦</div><div><small>RPG Life · облако</small><h2>Войти в своего персонажа</h2><p>После входа прогресс и картинки будут одинаковыми на всех устройствах.</p></div><form id="cloudLoginForm"><label>Email<input name="email" type="email" autocomplete="username" required value="${safe(remembered)}"></label><label>Пароль<input name="password" type="password" autocomplete="current-password" required></label>${message?`<div class="cloud-auth-error">${safe(message)}</div>`:''}<button class="primary">Войти</button></form><div class="cloud-auth-note">Локальная копия остаётся на устройстве даже без сети.</div></div>`;
     $('#cloudLoginForm').onsubmit=async e=>{
@@ -67,15 +90,15 @@
     };
     setStatus('offline','Нужен вход');
   }
-  function hideGate(){ $('#cloudAuthGate')?.remove(); }
+  function hideGate(){$('#cloudAuthGate')?.remove()}
 
   function openAccountPanel(){
     if(!currentUser){authGate();return}
     const last=lastCloudAt?new Date(lastCloudAt).toLocaleString('ru-RU'):'ещё не было';
-    const html=`<div class="modal-head"><div><div class="v2-kicker">Облако</div><h2>Синхронизация</h2></div><button class="close">×</button></div><div class="cloud-account"><div class="cloud-account-email">${safe(currentUser.email||'')}</div><div class="cloud-account-row"><span>Последняя синхронизация</span><b>${safe(last)}</b></div><div class="modal-actions"><button class="ghost" id="cloudPullNow">Забрать из облака</button><button class="soft" id="cloudPushNow">Сохранить сейчас</button><button class="danger-soft" id="cloudLogout">Выйти</button></div></div>`;
+    const html=`<div class="modal-head"><div><div class="v2-kicker">Облако</div><h2>Синхронизация</h2></div><button class="close">×</button></div><div class="cloud-account"><div class="cloud-account-email">${safe(currentUser.email||'')}</div><div class="cloud-account-row"><span>Последняя синхронизация</span><b>${safe(last)}</b></div><div class="modal-actions"><button class="ghost" id="cloudPullNow">Забрать из облака</button><button class="soft" id="cloudPushNow">Сохранить сейчас</button><button class="danger-soft" id="cloudLogout">Выйти</button></div><div class="cloud-auth-note">Автосинхронизация теперь не перезаписывает несохранённые локальные изменения.</div></div>`;
     if(typeof openModal==='function')openModal(html);else return;
     $('#cloudPushNow')?.addEventListener('click',async()=>{await pushCloud(true);$('#modal')?.close()});
-    $('#cloudPullNow')?.addEventListener('click',async()=>{await pullCloud(true);$('#modal')?.close()});
+    $('#cloudPullNow')?.addEventListener('click',async()=>{if(confirm('Заменить текущую локальную копию данными из облака? Перед заменой важные записи будут сохранены в страховочную копию.'))await pullCloud(true);$('#modal')?.close()});
     $('#cloudLogout')?.addEventListener('click',async()=>{await pushCloud(true).catch(()=>{});await sb.auth.signOut();currentUser=null;$('#modal')?.close();authGate()});
   }
 
@@ -87,6 +110,19 @@
   }
   function dataUrlToBlob(dataUrl){return fetch(dataUrl).then(r=>r.blob())}
   function cleanId(id){return String(id||'asset').replace(/[^a-zA-Z0-9_-]/g,'-')}
+
+  function writeStateLocal(nextState){
+    internalStateWrite=true;
+    try{nativeSetItem.call(localStorage,KEY,JSON.stringify(nextState))}finally{internalStateWrite=false}
+    lastObserved=localStorage.getItem(KEY)||'';
+  }
+
+  function backupCritical(){
+    try{
+      const backup={at:localIso(),practiceLogs:state?.practiceLogs||[],creativeLogs:state?.creativeLogs||[],achievements:state?.achievements||[],currencyLedger:state?.currencyLedger||[],campaigns:state?.campaigns||[],wallet:state?.wallet||{}};
+      nativeSetItem.call(localStorage,BACKUP_KEY,JSON.stringify(backup));
+    }catch(e){console.warn('Safety backup failed',e)}
+  }
 
   async function hydrateAssets(){
     if(!currentUser)return;
@@ -103,7 +139,6 @@
     if(!currentUser)return false;
     let changed=false;
     for(const {item,folder} of assetItems()){
-      // A hydrated image was deliberately removed in the editor.
       if(item.imagePath&&item.imageData===''&&hydratedItems.has(item)){
         const old=item.imagePath;
         const {error}=await sb.storage.from(BUCKET).remove([old]);
@@ -122,11 +157,7 @@
         hydratedItems.add(item);changed=true;
       }
     }
-    if(changed){
-      localStorage.setItem(KEY,JSON.stringify(state));
-      lastObserved=localStorage.getItem(KEY)||'';
-      if(typeof render==='function')render();
-    }
+    if(changed){writeStateLocal(state);if(typeof render==='function')render()}
     return changed;
   }
 
@@ -141,14 +172,18 @@
     if(!currentUser||saving||bootstrapping)return;
     if(!dirty&&!force)return;
     saving=true;setStatus('saving','Сохраняю…');
+    const revisionAtStart=localRevision;
     try{
       await migrateAssets();
+      const snapshot=cloudClone();
       const stamp=localIso();
-      const {error}=await sb.from(TABLE).upsert({user_id:currentUser.id,state:cloudClone(),updated_at:stamp},{onConflict:'user_id'});
+      const {error}=await sb.from(TABLE).upsert({user_id:currentUser.id,state:snapshot,updated_at:stamp},{onConflict:'user_id'});
       if(error)throw error;
-      lastCloudAt=stamp;localStorage.setItem(CLOUD_STAMP,stamp);dirty=false;
+      lastCloudAt=stamp;nativeSetItem.call(localStorage,CLOUD_STAMP,stamp);
       lastObserved=localStorage.getItem(KEY)||'';
-      setStatus('ok','Синхронизировано');
+      dirty=localRevision!==revisionAtStart;
+      setStatus(dirty?'saving':'ok',dirty?'Есть новые изменения…':'Синхронизировано');
+      if(dirty)schedulePush();
     }catch(e){dirty=true;showError(e.message||e)}finally{saving=false}
   }
 
@@ -159,31 +194,39 @@
 
   async function applyRemote(row){
     if(!row?.state)return false;
+    backupCritical();
     state=row.state;
     await hydrateAssets();
-    localStorage.setItem(KEY,JSON.stringify(state));
-    lastObserved=localStorage.getItem(KEY)||'';
-    lastCloudAt=row.updated_at||localIso();localStorage.setItem(CLOUD_STAMP,lastCloudAt);
+    writeStateLocal(state);
+    lastCloudAt=row.updated_at||localIso();nativeSetItem.call(localStorage,CLOUD_STAMP,lastCloudAt);
+    nativeSetItem.call(localStorage,LOCAL_STAMP,lastCloudAt);
     dirty=false;
     if(typeof render==='function')render();
     return true;
   }
 
+  function watchLocal(){
+    const raw=localStorage.getItem(KEY)||'';
+    if(raw===lastObserved)return false;
+    lastObserved=raw;
+    const stamp=localIso();nativeSetItem.call(localStorage,LOCAL_STAMP,stamp);
+    localRevision++;dirty=true;setStatus('saving','Есть изменения…');schedulePush();return true;
+  }
+
   async function pullCloud(force=false){
     if(!currentUser||bootstrapping||saving)return;
+    // Last line of defence: a local mutation always wins over an automatic pull.
+    if(!force&&(watchLocal()||dirty))return;
     try{
       const row=await fetchRemote();if(!row)return;
+      const localStamp=localStorage.getItem(LOCAL_STAMP)||'';
+      if(!force&&localStamp&&row.updated_at&&new Date(localStamp)>new Date(row.updated_at)){
+        dirty=true;schedulePush();return;
+      }
       if(force||(!dirty&&(!lastCloudAt||new Date(row.updated_at)>new Date(lastCloudAt)))){
         setStatus('saving','Получаю…');await applyRemote(row);setStatus('ok','Синхронизировано');
       }
     }catch(e){showError(e.message||e)}
-  }
-
-  function watchLocal(){
-    const raw=localStorage.getItem(KEY)||'';
-    if(raw===lastObserved)return;
-    lastObserved=raw;dirty=true;setStatus('saving','Есть изменения…');
-    clearTimeout(saveTimer);saveTimer=setTimeout(()=>pushCloud(),SAVE_DEBOUNCE);
   }
 
   async function bootstrapUser(){
@@ -191,15 +234,22 @@
     bootstrapping=true;hideGate();setStatus('saving','Подключаю облако…');
     try{
       const remote=await fetchRemote();
+      const localRaw=localStorage.getItem(KEY)||'';
+      const localStamp=localStorage.getItem(LOCAL_STAMP)||'';
+      const remoteStamp=remote?.updated_at||'';
       if(remote?.state){
-        await applyRemote(remote);
-        // Old cloud rows may still contain base64 artwork. Move it once.
-        const moved=await migrateAssets();if(moved){dirty=true}
-      }else{
+        // If this device has a newer local edit, do NOT replace it at startup.
+        if(localStamp&&remoteStamp&&new Date(localStamp)>new Date(remoteStamp)){
+          dirty=true;
+        }else{
+          await applyRemote(remote);
+          const moved=await migrateAssets();if(moved)dirty=true;
+        }
+      }else if(localRaw){
         await migrateAssets();dirty=true;
       }
       bootstrapping=false;
-      await pushCloud(!remote);
+      if(dirty)await pushCloud(true);else if(!remote)await pushCloud(true);
       setStatus('ok','Синхронизировано');
     }catch(e){bootstrapping=false;showError(e.message||e)}
     lastObserved=localStorage.getItem(KEY)||'';
@@ -212,9 +262,10 @@
     const {data}=await sb.auth.getSession();
     currentUser=data?.session?.user||null;
     if(currentUser)await bootstrapUser();else authGate();
-    setInterval(watchLocal,700);
+    setInterval(watchLocal,500);
     window.addEventListener('focus',()=>pullCloud(false));
-    window.addEventListener('online',()=>{setStatus('saving','Связь вернулась…');dirty=true;pushCloud(true)});
+    window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&dirty)pushCloud(true)});
+    window.addEventListener('online',()=>{setStatus('saving','Связь вернулась…');if(dirty)pushCloud(true);else pullCloud(false)});
     window.addEventListener('offline',()=>setStatus('offline','Оффлайн'));
     sb.auth.onAuthStateChange((event,session)=>{
       const next=session?.user||null;
