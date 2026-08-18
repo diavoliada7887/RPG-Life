@@ -7,13 +7,73 @@
   <meta name="description" content="RPG Life — личная RPG без наказания за пропуски." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="fantasy.css" />
+  <link rel="stylesheet" href="rpg-v2.css" />
+  <link rel="stylesheet" href="rpg-v4.css" />
+  <link rel="stylesheet" href="rpg-v5.css" />
+  <link rel="stylesheet" href="rpg-v6.css" />
+  <link rel="stylesheet" href="rpg-v7.css" />
+  <link rel="stylesheet" href="rpg-v8.css" />
+  <link rel="stylesheet" href="rpg-v10.css" />
+  <link rel="stylesheet" href="rpg-v11.css" />
+  <link rel="stylesheet" href="rpg-v12.css" />
+  <link rel="stylesheet" href="rpg-v13.css" />
+  <link rel="stylesheet" href="rpg-v18.css?v=31" />
+  <link rel="stylesheet" href="rpg-v19.css?v=32" />
+  <link rel="stylesheet" href="rpg-v20.css?v=33" />
+  <link rel="stylesheet" href="rpg-v22.css?v=35" />
+  <link rel="stylesheet" href="rpg-v23.css?v=36" />
+  <link rel="stylesheet" href="rpg-v24.css?v=38" />
+  <link rel="stylesheet" href="rpg-v26.css?v=40" />
+  <link rel="stylesheet" href="rpg-v27.css?v=41" />
+  <link rel="stylesheet" href="rpg-v28.css?v=46" />
+  <link rel="stylesheet" href="rpg-v29.css?v=48" />
+  <link rel="stylesheet" href="rpg-v30.css?v=49" />
+  <link rel="stylesheet" href="rpg-v31.css?v=50" />
+  <link rel="stylesheet" href="rpg-v32.css?v=51" />
+  <link rel="stylesheet" href="rpg-v33.css?v=52" />
+  <link rel="stylesheet" href="rpg-v34.css?v=54" />
   <title>RPG Life</title>
+  <script>
+    (() => {
+      const marker = 'rpg-live-cache-repair-20260818-v1';
+      if (sessionStorage.getItem(marker)) return;
+      sessionStorage.setItem(marker, '1');
+
+      const repairs = [];
+      if ('caches' in window) {
+        repairs.push(
+          caches.keys().then(keys => Promise.all(
+            keys.filter(key => key.startsWith('rpg-life-')).map(key => caches.delete(key))
+          ))
+        );
+      }
+      if ('serviceWorker' in navigator) {
+        repairs.push(
+          navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(
+            registrations
+              .filter(registration => registration.scope.includes('/RPG-Life/'))
+              .map(registration => registration.unregister())
+          ))
+        );
+      }
+
+      if (repairs.length) {
+        Promise.allSettled(repairs).then(() => {
+          const url = new URL(location.href);
+          url.searchParams.set('cacheRepair', '1');
+          location.replace(url.toString());
+        });
+      }
+    })();
+  </script>
 </head>
 <body>
   <noscript>
     <div style="max-width:720px;margin:32px auto;padding:20px;border:1px solid #c8b9e8;border-radius:16px;background:#fff;color:#2b2340;font:16px/1.5 system-ui,sans-serif">
       <b>RPG Life не может запуститься: JavaScript отключён или заблокирован браузером.</b><br>
-      Данные приложения не удалены.
+      Это диагностическое сообщение: данные приложения не удалены.
     </div>
   </noscript>
   <div class="app-shell">
@@ -40,6 +100,41 @@
   </div>
   <dialog id="modal" class="modal"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+  <script src="calorie-bank.js" defer></script>
+  <script src="rpg-simple-bank.js" defer></script>
+  <script src="gameplay-v5.js" defer></script>
+  <script src="gameplay-v6.js" defer></script>
+  <script src="gameplay-v7.js" defer></script>
+  <script src="gameplay-v8.js" defer></script>
+  <script src="gameplay-v10.js" defer></script>
+  <script src="gameplay-v11.js" defer></script>
+  <script src="gameplay-v12.js" defer></script>
+  <script src="gameplay-v13.js" defer></script>
+  <script src="gameplay-v14.js" defer></script>
+  <script src="gameplay-v15.js" defer></script>
+  <script src="gameplay-v16.js" defer></script>
+  <script src="gameplay-v17.js?v=30" defer></script>
+  <script src="gameplay-v18.js?v=31" defer></script>
+  <script src="gameplay-v19.js?v=32" defer></script>
+  <script src="gameplay-v20.js?v=33" defer></script>
+  <script src="gameplay-v22.js?v=35" defer></script>
+  <script src="gameplay-v23.js?v=36" defer></script>
+  <script src="gameplay-v24.js?v=38" defer></script>
+  <script src="gameplay-v25.js?v=39" defer></script>
+  <script src="gameplay-v27.js?v=41" defer></script>
+  <script src="gameplay-v28.js?v=42" defer></script>
+  <script src="gameplay-v29.js?v=43" defer></script>
+  <script src="gameplay-v30.js?v=46" defer></script>
+  <script src="gameplay-v31.js?v=47" defer></script>
+  <script src="gameplay-v32.js?v=48" defer></script>
+  <script src="gameplay-v33.js?v=49" defer></script>
+  <script src="gameplay-v34.js?v=50" defer></script>
+  <script src="gameplay-v35.js?v=51" defer></script>
+  <script src="gameplay-v36.js?v=52" defer></script>
+  <script src="gameplay-v37.js?v=53" defer></script>
+  <script src="gameplay-v38.js?v=54" defer></script>
+  <script src="gameplay-v39.js?v=56" defer></script>
   <script type="module" src="./src/main.ts"></script>
 </body>
 </html>
