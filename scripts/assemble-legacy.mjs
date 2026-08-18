@@ -14,9 +14,7 @@ const files = [
   'gameplay-v23.js', 'gameplay-v24.js', 'gameplay-v25.js', 'gameplay-v27.js',
   'gameplay-v28.js', 'gameplay-v29.js', 'gameplay-v30.js', 'gameplay-v31.js',
   'gameplay-v32.js', 'gameplay-v33.js', 'gameplay-v34.js', 'gameplay-v35.js',
-  'gameplay-v36.js', 'gameplay-v37.js', 'gameplay-v38.js', 'gameplay-v39.js',
-  'cloud-sync-v2.js',
-  'cloud-recovery.js'
+  'gameplay-v36.js', 'gameplay-v37.js', 'gameplay-v38.js', 'gameplay-v39.js'
 ];
 
 const chunks = [];
