@@ -1,9 +1,6 @@
 name: RPG Live build
 
 on:
-  push:
-    branches:
-      - agent/typescript-vite-migration
   pull_request:
     branches:
       - main
