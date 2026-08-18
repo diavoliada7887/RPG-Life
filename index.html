@@ -38,6 +38,12 @@
   <title>RPG Life</title>
 </head>
 <body>
+  <noscript>
+    <div style="max-width:720px;margin:32px auto;padding:20px;border:1px solid #c8b9e8;border-radius:16px;background:#fff;color:#2b2340;font:16px/1.5 system-ui,sans-serif">
+      <b>RPG Life не может запуститься: JavaScript отключён или заблокирован браузером.</b><br>
+      Это диагностическое сообщение: данные приложения не удалены.
+    </div>
+  </noscript>
   <div class="app-shell">
     <header class="topbar">
       <button class="brand" data-nav="today" aria-label="RPG Life — на главную">
@@ -63,7 +69,6 @@
   <dialog id="modal" class="modal"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js" defer></script>
-  <script src="sync-local-guard.js?v=55" defer></script>
   <script src="calorie-bank.js" defer></script>
   <script src="rpg-simple-bank.js" defer></script>
   <script src="gameplay-v5.js" defer></script>
@@ -98,7 +103,6 @@
   <script src="gameplay-v37.js?v=53" defer></script>
   <script src="gameplay-v38.js?v=54" defer></script>
   <script src="gameplay-v39.js?v=56" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="cloud-sync-v2.js?v=57" defer></script>
   <script src="cloud-recovery.js?v=45" defer></script>
 </body>
