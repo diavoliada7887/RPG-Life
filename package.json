@@ -1,0 +1,16 @@
+{
+  "name": "rpg-live",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "assemble": "node scripts/assemble-legacy.mjs",
+    "dev": "npm run assemble && vite",
+    "build": "npm run assemble && tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}
