@@ -1,12 +1,53 @@
-const CACHE='rpg-life-v58-emergency-freeze';
-const ASSETS=['./','./index.html','./recovery.html','./styles.css','./fantasy.css','./rpg-v2.css','./rpg-v4.css','./rpg-v5.css','./rpg-v6.css','./rpg-v7.css','./rpg-v8.css','./rpg-v10.css','./rpg-v11.css','./rpg-v12.css','./rpg-v13.css','./rpg-v18.css?v=31','./rpg-v19.css?v=32','./rpg-v20.css?v=33','./rpg-v22.css?v=35','./rpg-v23.css?v=36','./rpg-v24.css?v=38','./rpg-v26.css?v=40','./rpg-v27.css?v=41','./rpg-v28.css?v=46','./rpg-v29.css?v=48','./rpg-v30.css?v=49','./rpg-v31.css?v=50','./rpg-v32.css?v=51','./rpg-v33.css?v=52','./rpg-v34.css?v=54','./assets/currency-gold.png','./assets/currency-diamond.png','./cloud-sync.css?v=45','./app.js','./sync-local-guard.js?v=55','./calorie-bank.js','./rpg-simple-bank.js','./gameplay-v5.js','./gameplay-v6.js','./gameplay-v7.js','./gameplay-v8.js','./gameplay-v10.js','./gameplay-v11.js','./gameplay-v12.js','./gameplay-v13.js','./gameplay-v14.js','./gameplay-v15.js','./gameplay-v16.js','./gameplay-v17.js?v=30','./gameplay-v18.js?v=31','./gameplay-v19.js?v=32','./gameplay-v20.js?v=33','./gameplay-v22.js?v=35','./gameplay-v23.js?v=36','./gameplay-v24.js?v=38','./gameplay-v25.js?v=39','./gameplay-v27.js?v=41','./gameplay-v28.js?v=42','./gameplay-v29.js?v=43','./gameplay-v30.js?v=46','./gameplay-v31.js?v=47','./gameplay-v32.js?v=48','./gameplay-v33.js?v=49','./gameplay-v34.js?v=50','./gameplay-v35.js?v=51','./gameplay-v36.js?v=52','./gameplay-v37.js?v=53','./gameplay-v38.js?v=54','./gameplay-v39.js?v=56','./cloud-sync-v2.js?v=57','./cloud-recovery.js?v=45','./manifest.webmanifest','./icon.svg'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{
-  const u=new URL(e.request.url);
-  if(e.request.mode==='navigate'||u.pathname.endsWith('/index.html')||u.pathname.endsWith('/recovery.html')){
-    e.respondWith(fetch(e.request).then(resp=>{const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return resp}).catch(()=>caches.match(e.request)));
+const CACHE='rpg-life-v59-stable-runtime';
+
+self.addEventListener('install',event=>{
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil(
+    caches.keys()
+      .then(keys=>Promise.all(keys.filter(key=>key.startsWith('rpg-life-')&&key!==CACHE).map(key=>caches.delete(key))))
+      .then(()=>self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch',event=>{
+  const request=event.request;
+  if(request.method!=='GET')return;
+
+  const url=new URL(request.url);
+  if(url.origin!==self.location.origin)return;
+
+  if(request.mode==='navigate'){
+    event.respondWith(
+      fetch(request)
+        .then(response=>{
+          if(response&&response.ok){
+            const copy=response.clone();
+            caches.open(CACHE).then(cache=>cache.put(request,copy));
+          }
+          return response;
+        })
+        .catch(async()=>{
+          return (await caches.match(request)) ||
+                 (await caches.match('./index.html')) ||
+                 Response.error();
+        })
+    );
     return;
   }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return resp}).catch(()=>caches.match('./index.html'))));
+
+  event.respondWith(
+    caches.match(request).then(cached=>{
+      const network=fetch(request).then(response=>{
+        if(response&&response.ok){
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(request,copy));
+        }
+        return response;
+      });
+      return cached || network;
+    })
+  );
 });
