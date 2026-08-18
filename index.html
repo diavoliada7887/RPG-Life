@@ -35,6 +35,39 @@
   <link rel="stylesheet" href="rpg-v33.css?v=52" />
   <link rel="stylesheet" href="rpg-v34.css?v=54" />
   <title>RPG Life</title>
+  <script>
+    (() => {
+      const marker = 'rpg-live-cache-repair-20260818-v1';
+      if (sessionStorage.getItem(marker)) return;
+      sessionStorage.setItem(marker, '1');
+
+      const repairs = [];
+      if ('caches' in window) {
+        repairs.push(
+          caches.keys().then(keys => Promise.all(
+            keys.filter(key => key.startsWith('rpg-life-')).map(key => caches.delete(key))
+          ))
+        );
+      }
+      if ('serviceWorker' in navigator) {
+        repairs.push(
+          navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(
+            registrations
+              .filter(registration => registration.scope.includes('/RPG-Life/'))
+              .map(registration => registration.unregister())
+          ))
+        );
+      }
+
+      if (repairs.length) {
+        Promise.allSettled(repairs).then(() => {
+          const url = new URL(location.href);
+          url.searchParams.set('cacheRepair', '1');
+          location.replace(url.toString());
+        });
+      }
+    })();
+  </script>
 </head>
 <body>
   <noscript>
