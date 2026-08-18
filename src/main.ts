@@ -1,4 +1,5 @@
-import './legacy.css';
-import './generated/legacy-app.js';
+import { loadState } from './state/storage';
 
-// Migration entry point. New code goes into typed modules and is imported here.
+// Stage 1 deliberately leaves the proven legacy runtime in place.
+// New typed modules will replace legacy features one by one.
+void loadState;
