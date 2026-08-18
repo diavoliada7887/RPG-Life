@@ -3,9 +3,11 @@
   const SUPABASE_URL='https://yujryxybceihzqerhjqk.supabase.co';
   const SUPABASE_KEY='sb_publishable_o4akr1u5oU9a0a54O4Ymeg_V6nmzMte';
   const TABLE='rpg_state';
+  const BUCKET='rpg-assets';
   const STATE_KEY='rpg-life-v4';
   const EMAIL_KEY='rpg-life-login-email';
   const MANUAL_BACKUP_KEY='rpg-life-manual-backup';
+  const SIGNED_SECONDS=60*60*24*7;
   let sb=null;
   let loadingClient=null;
 
@@ -96,6 +98,30 @@
     return {row:data,user:session.user};
   }
 
+  function assetItems(snapshot){
+    const list=[];
+    (snapshot?.buffDefinitions||[]).forEach(item=>list.push(item));
+    (snapshot?.bosses||[]).forEach(item=>list.push(item));
+    return list;
+  }
+
+  async function hydrateSnapshotAssets(snapshot){
+    const next=JSON.parse(JSON.stringify(snapshot||{}));
+    const items=assetItems(next).filter(item=>item?.imagePath);
+    if(!items.length)return next;
+    const paths=[...new Set(items.map(item=>item.imagePath).filter(Boolean))];
+    if(!paths.length)return next;
+    const c=await client();
+    const {data,error}=await c.storage.from(BUCKET).createSignedUrls(paths,SIGNED_SECONDS);
+    if(error)throw error;
+    const urls=new Map((data||[]).map(row=>[row.path,row.signedUrl||row.signedURL]));
+    items.forEach(item=>{
+      const url=urls.get(item.imagePath);
+      if(url)item.imageData=url;
+    });
+    return next;
+  }
+
   async function showCloudSnapshot(){
     try{
       const result=await fetchSnapshot();
@@ -109,9 +135,10 @@
       const practices=(row.state.practiceLogs||[]).length;
       const creative=(row.state.creativeLogs||[]).length;
       const achievements=(row.state.achievements||[]).length;
+      const images=assetItems(row.state).filter(item=>item?.imagePath).length;
       openHtml(`<div class="modal-head"><div><div class="v2-kicker">Хранилище</div><h2>Персонаж найден</h2></div><button class="close">×</button></div>
         <p><b>${esc(user.email||'')}</b></p>
-        <div class="v2-card"><small>Снимок</small><h3>${esc(when)}</h3><p>${practices} записей практик · ${creative} творчества · ${achievements} достижений</p></div>
+        <div class="v2-card"><small>Снимок</small><h3>${esc(when)}</h3><p>${practices} записей практик · ${creative} творчества · ${achievements} достижений · ${images} PNG в хранилище</p></div>
         <p><small>Загрузка заменит текущую локальную копию. Перед заменой я сохраню её отдельной страховочной копией.</small></p>
         <div class="modal-actions"><button class="primary" id="manualCloudRestore">Загрузить этого персонажа</button><button class="ghost" id="manualCloudLogout">Выйти</button></div>`);
       $('#manualCloudRestore').onclick=()=>restoreSnapshot(row);
@@ -121,16 +148,24 @@
     }
   }
 
-  function restoreSnapshot(row){
+  async function restoreSnapshot(row){
     if(!row?.state)return;
     if(!confirm('Загрузить персонажа из хранилища и заменить текущую локальную копию?'))return;
+    const button=$('#manualCloudRestore');
+    if(button){button.disabled=true;button.textContent='Загружаю…'}
     try{
       const current=localStorage.getItem(STATE_KEY);
       if(current)localStorage.setItem(MANUAL_BACKUP_KEY,JSON.stringify({at:new Date().toISOString(),state:JSON.parse(current)}));
     }catch{}
-    localStorage.setItem(STATE_KEY,JSON.stringify(row.state));
-    localStorage.setItem('rpg-life-cloud-stamp',row.updated_at||new Date().toISOString());
-    location.reload();
+    try{
+      const hydrated=await hydrateSnapshotAssets(row.state);
+      localStorage.setItem(STATE_KEY,JSON.stringify(hydrated));
+      localStorage.setItem('rpg-life-cloud-stamp',row.updated_at||new Date().toISOString());
+      location.reload();
+    }catch(err){
+      if(button){button.disabled=false;button.textContent='Загрузить этого персонажа'}
+      openHtml(`<div class="modal-head"><h2>Не удалось загрузить персонажа</h2><button class="close">×</button></div><p>${esc(err?.message||String(err))}</p><p><small>Локальная копия не заменена.</small></p>`);
+    }
   }
 
   async function openCloud(){
