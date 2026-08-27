@@ -1,4 +1,4 @@
-const CACHE='rpg-life-v59-stable-runtime';
+const CACHE='rpg-life-v66-pwa-runtime';
 
 self.addEventListener('install',event=>{
   event.waitUntil(self.skipWaiting());
@@ -19,7 +19,9 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
 
-  if(request.mode==='navigate'){
+  const networkFirst=['navigate','script','style'].includes(request.destination)||request.mode==='navigate';
+
+  if(networkFirst){
     event.respondWith(
       fetch(request)
         .then(response=>{
@@ -29,11 +31,11 @@ self.addEventListener('fetch',event=>{
           }
           return response;
         })
-        .catch(async()=>{
-          return (await caches.match(request)) ||
-                 (await caches.match('./index.html')) ||
-                 Response.error();
-        })
+        .catch(async()=>(
+          (await caches.match(request)) ||
+          (request.mode==='navigate' ? (await caches.match('./index.html')) : null) ||
+          Response.error()
+        ))
     );
     return;
   }
@@ -46,8 +48,8 @@ self.addEventListener('fetch',event=>{
           caches.open(CACHE).then(cache=>cache.put(request,copy));
         }
         return response;
-      });
-      return cached || network;
+      }).catch(()=>cached||Response.error());
+      return cached||network;
     })
   );
 });
