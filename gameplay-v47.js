@@ -157,7 +157,7 @@
     if(compact)return `<button class="report-mini47" type="button" data-report-date47="${r.date}"><span>${reportTypeLabel47(r.type)}</span><b>${esc47(r.title.replace(/^Итоги (?:недели|месяца|\d квартала) · /,''))}</b><small>${r.actionCount} действий · ${r.days} дней</small></button>`;
     return `<article class="period-report47 report-${r.type}47"><div class="report-top47"><div><div class="v2-kicker">${reportTypeLabel47(r.type)} · только сделанное</div><h3>${esc47(r.title)}</h3></div><span>✦</span></div><p class="report-praise47">${esc47(r.praise)}</p><div class="report-numbers47"><span><b>${r.days}</b><small>дней с жизнью</small></span><span><b>${r.actionCount}</b><small>действий</small></span><span><b>${r.directions}</b><small>направлений</small></span></div>${rows?`<div class="report-rows47">${rows}</div>`:''}${bosses}</article>`;
   }
-  function reportsOnDate47(date){return (state[REPORTS_KEY47]||[]).filter(r=>r.date===date).sort((a,b)=>({week:1,month:2,quarter:3}[a.type]-({week:1,month:2,quarter:3}[b.type]))}
+  function reportsOnDate47(date){return (state[REPORTS_KEY47]||[]).filter(r=>r.date===date).sort((a,b)=>({week:1,month:2,quarter:3}[a.type]-({week:1,month:2,quarter:3}[b.type])))}
 
   function sourceOptions47(){
     const practices=visiblePractices47().map(p=>`<option value="p:${esc47(p.id)}" ${calendarFocus47===`p:${p.id}`?'selected':''}>${esc47(p.name)}</option>`).join('');
