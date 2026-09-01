@@ -1,7 +1,18 @@
-const CACHE='rpg-life-v66-pwa-runtime';
+const CACHE='rpg-life-v68-pwa-runtime';
 
 self.addEventListener('install',event=>{
-  event.waitUntil(self.skipWaiting());
+  const base=new URL('./',self.location.href);
+  const essentials=[
+    new URL('./',base).href,
+    new URL('manifest.webmanifest?v=68',base).href,
+    new URL('icon-192.svg',base).href,
+    new URL('icon-512.svg',base).href
+  ];
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache=>cache.addAll(essentials).catch(()=>{}))
+      .then(()=>self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate',event=>{
@@ -19,7 +30,9 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
   if(url.origin!==self.location.origin)return;
 
-  const networkFirst=['navigate','script','style'].includes(request.destination)||request.mode==='navigate';
+  const networkFirst=
+    request.mode==='navigate' ||
+    ['script','style','manifest'].includes(request.destination);
 
   if(networkFirst){
     event.respondWith(
@@ -33,7 +46,7 @@ self.addEventListener('fetch',event=>{
         })
         .catch(async()=>(
           (await caches.match(request)) ||
-          (request.mode==='navigate' ? (await caches.match('./index.html')) : null) ||
+          (request.mode==='navigate' ? (await caches.match(new URL('./',self.location.href).href)) : null) ||
           Response.error()
         ))
     );
