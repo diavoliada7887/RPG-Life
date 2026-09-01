@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/icon-assets.yml'
+      - 'assets/app-icon-v3.png'
 
 permissions:
   contents: write
