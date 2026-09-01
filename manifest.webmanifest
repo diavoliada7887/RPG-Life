@@ -6,7 +6,10 @@
   "start_url": "/RPG-Life/",
   "scope": "/RPG-Life/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "launch_handler": {
     "client_mode": "focus-existing"
   },
@@ -15,8 +18,17 @@
   "theme_color": "#11131a",
   "lang": "ru",
   "icons": [
-    {"src":"/RPG-Life/icon-192.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any"},
-    {"src":"/RPG-Life/icon-512.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any"},
-    {"src":"/RPG-Life/icon-512.svg","sizes":"512x512","type":"image/svg+xml","purpose":"maskable"}
+    {
+      "src": "/RPG-Life/assets/app-icon-v2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/RPG-Life/assets/app-icon-v2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
   ]
 }
