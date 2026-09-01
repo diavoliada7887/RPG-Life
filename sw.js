@@ -1,14 +1,11 @@
-const CACHE='rpg-life-v69-pwa-runtime';
+const CACHE='rpg-life-v70-pwa-runtime';
 
 self.addEventListener('install',event=>{
   const base=new URL('./',self.location.href);
   const essentials=[
     new URL('./',base).href,
-    new URL('manifest.webmanifest?v=69',base).href,
-    new URL('icon-192.svg',base).href,
-    new URL('icon-512.svg',base).href,
-    new URL('assets/app-icon-v2.svg?v=69',base).href
-  ];
+    new URL('manifest.webmanifest?v=70',base).href,
+    new URL('assets/app-icon-v3.png?v=70',base).href,  ];
   event.waitUntil(
     caches.open(CACHE)
       .then(cache=>cache.addAll(essentials).catch(()=>{}))
