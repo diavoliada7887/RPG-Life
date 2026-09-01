@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/icon-assets.yml'
-      - 'assets/app-icon-v3.png'
 
 permissions:
   contents: write
@@ -19,19 +18,28 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install pillow
+      - name: Download icon source
+        run: |
+          curl -L --fail --retry 3 'https://media.canva.com/v2/image-resize/format:PNG/height:200/quality:100/uri:ifs%3A%2F%2FM%2F0e97b1fc-1fc2-4147-a8bd-183b9fa3ee4c/watermark:F/width:200?csig=AAAAAAAAAAAAAAAAAAAAADxQ7fAMf0zWfZ1EGvPB9rr_-CC1ELI6eT_3LunGABGW&exp=1788257954&osig=AAAAAAAAAAAAAAAAAAAAAB7NSe6SAyxg8QLs_mVFI76V-3NFzKubOI-u02-rJc1N&signer=media-rpc&x-canva-quality=thumbnail' -o /tmp/icon-source.png
+          file /tmp/icon-source.png
       - name: Render PNG icon sizes
         run: |
           python - <<'PY'
-          from PIL import Image
-          src = Image.open('assets/app-icon-v3.png').convert('RGBA')
+          from PIL import Image, ImageOps
+          src = Image.open('/tmp/icon-source.png').convert('RGBA')
+          if src.width < 128 or src.height < 128:
+              raise SystemExit(f'icon source too small: {src.size}')
           for size, name in [(192, 'assets/app-icon-192.png'), (512, 'assets/app-icon-512.png')]:
-              img = src.resize((size, size), Image.Resampling.LANCZOS)
+              img = ImageOps.fit(src, (size, size), Image.Resampling.LANCZOS)
               img.save(name, format='PNG', optimize=True)
+              check = Image.open(name)
+              assert check.size == (size, size)
+              print(name, check.size, check.mode)
           PY
       - name: Commit generated icons
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add assets/app-icon-192.png assets/app-icon-512.png
-          git diff --cached --quiet || git commit -m "Generate raster PWA icon sizes"
+          git diff --cached --quiet || git commit -m "Generate valid PNG PWA icons"
           git push
