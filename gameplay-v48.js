@@ -10,8 +10,9 @@
     return 'assets/rpg/spirit_buff_01.png';
   }
 
-  state.assetMigrations=state.assetMigrations&&typeof state.assetMigrations==='object'?state.assetMigrations:{};
-  if(!state.assetMigrations[MIGRATION]){
+  function ensureLocalBuffAssets48(){
+    state.assetMigrations=state.assetMigrations&&typeof state.assetMigrations==='object'?state.assetMigrations:{};
+    if(state.assetMigrations[MIGRATION])return false;
     (state.buffDefinitions||[]).forEach(buff=>{
       buff.imageData=localBuffAsset48(buff);
       if('imagePath' in buff)delete buff.imagePath;
@@ -19,7 +20,10 @@
     });
     state.assetMigrations[MIGRATION]=new Date().toISOString();
     save();
+    return true;
   }
+
+  ensureLocalBuffAssets48();
 
   function healBuffImages48(){
     document.querySelectorAll('.buff-card23 img,.active-buff-thumb27 img').forEach(img=>{
@@ -36,6 +40,7 @@
 
   const renderBefore48=render;
   render=function(){
+    ensureLocalBuffAssets48();
     const out=renderBefore48();
     requestAnimationFrame(healBuffImages48);
     return out;
