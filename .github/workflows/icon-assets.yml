@@ -1,0 +1,36 @@
+name: Build PWA icon PNGs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/icon-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: Render PNG icon sizes
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          src = Image.open('assets/app-icon-v3.png').convert('RGBA')
+          for size, name in [(192, 'assets/app-icon-192.png'), (512, 'assets/app-icon-512.png')]:
+              img = src.resize((size, size), Image.Resampling.LANCZOS)
+              img.save(name, format='PNG', optimize=True)
+          PY
+      - name: Commit generated icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/app-icon-192.png assets/app-icon-512.png
+          git diff --cached --quiet || git commit -m "Generate raster PWA icon sizes"
+          git push
